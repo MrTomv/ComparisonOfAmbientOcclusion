@@ -1,0 +1,281 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{d7225d49-f04b-4381-85ab-2487d1640381}</ProjectGuid>
+    <RootNamespace>glfw</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Users\10373\Desktop\github demo\OpenGL-master\glfw\dependences\GLFW\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\10373\Desktop\github demo\OpenGL-master\glfw\dependences\GLFW\lib-vc2022;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>C:\Users\10373\Desktop\github demo\OpenGL-master\glfw\dependences\GLFW\include;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\Users\10373\Desktop\github demo\OpenGL-master\glfw\dependences\GLFW\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\10373\Desktop\github demo\OpenGL-master\glfw\dependences\GLFW\lib-vc2022;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>C:\Users\10373\Desktop\github demo\OpenGL-master\glfw\dependences\GLFW\include;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>Y:\OpenGL\glfw\glfw\dependences\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>Y:\OpenGL\glfw\glfw\dependences\GLFW;Y:\OpenGL\glfw\glfw\dependences\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>Y:\OpenGL\glfw\glfw\dependences\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>Y:\OpenGL\glfw\glfw\dependences\GLFW;Y:\OpenGL\glfw\glfw\dependences\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>Y:\OpenGL\glfw\glfw\dependences\GLFW\include;%(AdditionalIncludeDirectories);C:\Users\10373\Desktop\github demo\OpenGL-master\glfw\dependences\GLFW\include</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>Y:\OpenGL\glfw\glfw\dependences\GLFW;Y:\OpenGL\glfw\glfw\dependences\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\OpenGL\glfw\glfw\dependences\GLFW\include;%(AdditionalIncludeDirectories);C:\Users\10373\Desktop\github demo\OpenGL-master\glfw\dependences\GLFW\include</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\OpenGL\glfw\glfw\dependences\GLFW;C:\OpenGL\glfw\glfw\dependences\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="dependences\GLFW\include\imgui\imgui.cpp" />
+    <ClCompile Include="dependences\GLFW\include\imgui\imgui_demo.cpp" />
+    <ClCompile Include="dependences\GLFW\include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="dependences\GLFW\include\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="dependences\GLFW\include\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="dependences\GLFW\include\imgui\imgui_tables.cpp" />
+    <ClCompile Include="dependences\GLFW\include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\05\main.cpp" />
+    <ClCompile Include="src\glad.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\Shader02\basic_lighting.fs" />
+    <None Include="res\Shader02\basic_lighting.vs" />
+    <None Include="res\Shader02\basic_lighting_cube.fs" />
+    <None Include="res\Shader02\basic_lighting_cube.vs" />
+    <None Include="res\Shader02\Light_cube_caster.fs" />
+    <None Include="res\Shader02\Light_cube_caster.vs" />
+    <None Include="res\Shader02\Lighting_maps.fs" />
+    <None Include="res\Shader02\Lighting_maps.vs" />
+    <None Include="res\Shader02\Light_caster.fs" />
+    <None Include="res\Shader02\Light_caster.vs" />
+    <None Include="res\Shader02\Materials.fs" />
+    <None Include="res\Shader02\Materials.vs" />
+    <None Include="res\Shader02\Multiple_light.fs" />
+    <None Include="res\Shader02\Multiple_light.vs" />
+    <None Include="res\Shader03\Model.fs" />
+    <None Include="res\Shader03\Model.vs" />
+    <None Include="res\Shader04\Blending.fs" />
+    <None Include="res\Shader04\Blending.vs" />
+    <None Include="res\Shader04\Cubemaps.fs" />
+    <None Include="res\Shader04\Cubemaps.vs" />
+    <None Include="res\Shader04\Cubemaps2.fs" />
+    <None Include="res\Shader04\Cubemaps2.vs" />
+    <None Include="res\Shader04\Depth_testing.fs" />
+    <None Include="res\Shader04\Depth_testing.vs" />
+    <None Include="res\Shader04\Framebuffers.fs" />
+    <None Include="res\Shader04\Framebuffers.vs" />
+    <None Include="res\Shader04\FrameBuffer_win.fs" />
+    <None Include="res\Shader04\FrameBuffer_win.vs" />
+    <None Include="res\Shader04\Geometry.fs" />
+    <None Include="res\Shader04\Geometry.gs" />
+    <None Include="res\Shader04\Geometry.vs" />
+    <None Include="res\Shader04\Geometry1.fs" />
+    <None Include="res\Shader04\Geometry1.gs" />
+    <None Include="res\Shader04\Geometry1.vs" />
+    <None Include="res\Shader04\Geometry2.fs" />
+    <None Include="res\Shader04\Geometry2.gs" />
+    <None Include="res\Shader04\Geometry2.vs" />
+    <None Include="res\Shader04\Instance.fs" />
+    <None Include="res\Shader04\Instance.vs" />
+    <None Include="res\Shader04\shaderSingleColor.fs" />
+    <None Include="res\Shader04\shaderSingleColor.vs" />
+    <None Include="res\Shader04\Stencil.fs" />
+    <None Include="res\Shader04\Stencil.vs" />
+    <None Include="res\Shader05\AdvLighting.fs" />
+    <None Include="res\Shader05\AdvLighting.vs" />
+    <None Include="res\ssao\hbao.frag" />
+    <None Include="res\ssao\lightBox.frag" />
+    <None Include="res\ssao\lightBox.vert" />
+    <None Include="res\ssao\postprocessing.frag" />
+    <None Include="res\ssao\postprocessing.vert" />
+    <None Include="res\shader\basic.fs" />
+    <None Include="res\shader\Basic.shader" />
+    <None Include="res\shader\basic.vs" />
+    <None Include="res\shader\basic_coord.fs" />
+    <None Include="res\shader\basic_coord.vs" />
+    <None Include="res\shader\basic_texture.fs" />
+    <None Include="res\shader\basic_texture.vs" />
+    <None Include="res\shader\basic_transformations.vs" />
+    <None Include="res\shader\basic_transformations.fs" />
+    <None Include="res\Shader02\Color.fs" />
+    <None Include="res\Shader02\Color.vs" />
+    <None Include="res\Shader02\Color_light.fs" />
+    <None Include="res\Shader02\Color_light.vs" />
+    <None Include="res\ssao\gbuffer.frag" />
+    <None Include="res\ssao\gbuffer.vert" />
+    <None Include="res\ssao\postprocessing_hbao.frag" />
+    <None Include="res\ssao\postprocessing_ssao.frag" />
+    <None Include="res\ssao\ssao.frag" />
+    <None Include="res\ssao\ssao.vert" />
+    <None Include="src\example\8.1.deferred_shading\8.1.deferred_light_box.fs" />
+    <None Include="src\example\8.1.deferred_shading\8.1.deferred_light_box.vs" />
+    <None Include="src\example\8.1.deferred_shading\8.1.deferred_shading.fs" />
+    <None Include="src\example\8.1.deferred_shading\8.1.deferred_shading.vs" />
+    <None Include="src\example\8.1.deferred_shading\8.1.fbo_debug.fs" />
+    <None Include="src\example\8.1.deferred_shading\8.1.fbo_debug.vs" />
+    <None Include="src\example\8.1.deferred_shading\8.1.g_buffer.fs" />
+    <None Include="src\example\8.1.deferred_shading\8.1.g_buffer.vs" />
+    <None Include="src\example\8.2.deferred_shading_volumes\8.2.deferred_light_box.fs" />
+    <None Include="src\example\8.2.deferred_shading_volumes\8.2.deferred_light_box.vs" />
+    <None Include="src\example\8.2.deferred_shading_volumes\8.2.deferred_shading.fs" />
+    <None Include="src\example\8.2.deferred_shading_volumes\8.2.deferred_shading.vs" />
+    <None Include="src\example\8.2.deferred_shading_volumes\8.2.g_buffer.fs" />
+    <None Include="src\example\8.2.deferred_shading_volumes\8.2.g_buffer.vs" />
+    <None Include="src\example\9.ssao\9.ssao.fs" />
+    <None Include="src\example\9.ssao\9.ssao.vs" />
+    <None Include="src\example\9.ssao\9.ssao_blur.fs" />
+    <None Include="src\example\9.ssao\9.ssao_geometry.fs" />
+    <None Include="src\example\9.ssao\9.ssao_geometry.vs" />
+    <None Include="src\example\9.ssao\9.ssao_lighting.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dependences\GLFW\include\Camera.h" />
+    <ClInclude Include="dependences\GLFW\include\imgui\imconfig.h" />
+    <ClInclude Include="dependences\GLFW\include\imgui\imgui.h" />
+    <ClInclude Include="dependences\GLFW\include\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="dependences\GLFW\include\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="dependences\GLFW\include\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="dependences\GLFW\include\imgui\imgui_internal.h" />
+    <ClInclude Include="dependences\GLFW\include\imgui\imstb_rectpack.h" />
+    <ClInclude Include="dependences\GLFW\include\imgui\imstb_textedit.h" />
+    <ClInclude Include="dependences\GLFW\include\imgui\imstb_truetype.h" />
+    <ClInclude Include="dependences\GLFW\include\Mesh.h" />
+    <ClInclude Include="dependences\GLFW\include\Model.h" />
+    <ClInclude Include="dependences\GLFW\include\Shader.h" />
+    <ClInclude Include="dependences\GLFW\include\shader_s.h" />
+    <ClInclude Include="dependences\GLFW\include\stb_image.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
