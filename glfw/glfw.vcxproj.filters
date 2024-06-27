@@ -44,66 +44,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\shader\Basic.shader" />
-    <None Include="res\shader\basic.vs" />
-    <None Include="res\shader\basic.fs" />
-    <None Include="res\shader\basic_texture.vs" />
-    <None Include="res\shader\basic_texture.fs" />
-    <None Include="res\shader\basic_transformations.vs" />
-    <None Include="res\shader\basic_transformations.fs" />
-    <None Include="res\shader\basic_coord.vs" />
-    <None Include="res\shader\basic_coord.fs" />
-    <None Include="res\Shader02\Color.vs" />
-    <None Include="res\Shader02\Color.fs" />
-    <None Include="res\Shader02\Color_light.vs" />
-    <None Include="res\Shader02\Color_light.fs" />
-    <None Include="res\Shader02\basic_lighting.vs" />
-    <None Include="res\Shader02\basic_lighting.fs" />
-    <None Include="res\Shader02\basic_lighting_cube.vs" />
-    <None Include="res\Shader02\basic_lighting_cube.fs" />
-    <None Include="res\Shader02\Materials.vs" />
-    <None Include="res\Shader02\Materials.fs" />
-    <None Include="res\Shader02\Lighting_maps.fs" />
-    <None Include="res\Shader02\Lighting_maps.vs" />
-    <None Include="res\Shader02\Light_caster.vs" />
-    <None Include="res\Shader02\Light_caster.fs" />
-    <None Include="res\Shader02\Light_cube_caster.vs" />
-    <None Include="res\Shader02\Light_cube_caster.fs" />
-    <None Include="res\Shader02\Multiple_light.vs" />
-    <None Include="res\Shader02\Multiple_light.fs" />
-    <None Include="res\Shader03\Model.vs" />
-    <None Include="res\Shader03\Model.fs" />
-    <None Include="res\Shader04\Depth_testing.vs" />
-    <None Include="res\Shader04\Depth_testing.fs" />
-    <None Include="res\Shader04\Stencil.vs" />
-    <None Include="res\Shader04\Stencil.fs" />
-    <None Include="res\Shader04\shaderSingleColor.fs" />
-    <None Include="res\Shader04\shaderSingleColor.vs" />
-    <None Include="res\Shader04\Blending.vs" />
-    <None Include="res\Shader04\Blending.fs" />
-    <None Include="res\Shader04\Framebuffers.vs" />
-    <None Include="res\Shader04\Framebuffers.fs" />
-    <None Include="res\Shader04\FrameBuffer_win.fs" />
-    <None Include="res\Shader04\FrameBuffer_win.vs" />
-    <None Include="res\Shader04\Cubemaps.vs" />
-    <None Include="res\Shader04\Cubemaps.fs" />
-    <None Include="res\Shader04\Cubemaps2.vs" />
-    <None Include="res\Shader04\Cubemaps2.fs" />
-    <None Include="res\Shader04\Geometry.fs" />
-    <None Include="res\Shader04\Geometry.vs" />
-    <None Include="res\Shader04\Geometry.gs" />
-    <None Include="res\Shader04\Geometry1.gs" />
-    <None Include="res\Shader04\Geometry1.vs" />
-    <None Include="res\Shader04\Geometry1.fs" />
-    <None Include="res\Shader04\Geometry2.vs" />
-    <None Include="res\Shader04\Geometry2.gs" />
-    <None Include="res\Shader04\Geometry2.fs" />
-    <None Include="res\Shader04\Instance.vs" />
-    <None Include="res\Shader04\Instance.fs" />
-    <None Include="res\Shader05\AdvLighting.vs" />
     <None Include="res\ssao\gbuffer.vert" />
     <None Include="res\ssao\gbuffer.frag" />
-    <None Include="res\Shader05\AdvLighting.fs" />
     <None Include="res\ssao\postprocessing.vert" />
     <None Include="res\ssao\postprocessing.frag" />
     <None Include="res\ssao\lightBox.vert" />
@@ -133,6 +75,9 @@
     <None Include="src\example\9.ssao\9.ssao_lighting.fs" />
     <None Include="res\ssao\hbao.frag" />
     <None Include="res\ssao\postprocessing_hbao.frag" />
+    <None Include="res\ssao\postprocessing_gtao.frag" />
+    <None Include="res\ssao\gtao.frag" />
+    <None Include="res\ssao\hbao_t.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependences\GLFW\include\shader_s.h">

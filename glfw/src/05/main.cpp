@@ -24,15 +24,20 @@
     // ssao
     constexpr char const* postprocessingSSAOFragPath = SHADERDIR_ "postprocessing_ssao.frag";
     constexpr char const* lightBoxFragPath = SHADERDIR_ "ssao.frag";
-    //hbao
+    // hbao
     constexpr char const* postprocessingHbaoFragPath = SHADERDIR_ "postprocessing_hbao.frag";
-    constexpr char const* HbaoFragPath = SHADERDIR_ "hbao.frag";
+    constexpr char const* HbaoFragPath = SHADERDIR_ "hbao_t.frag";
+    // gtao
+    constexpr char const* postprocessingGtaoFragPath = SHADERDIR_ "postprocessing_gtao.frag";
+    constexpr char const* GtaoFragPath = SHADERDIR_ "Gtao.frag";
+
 
 #define MODELDIR_ "res/texture/"
     //constexpr char const* modelPath = MODELDIR_ "backpack/backpack.obj";
     //constexpr char const* modelPath = MODELDIR_ "crytek-sponza/sponza.obj";
-    constexpr char const* modelPath = MODELDIR_ "sponza/Sponza.gltf";
     //constexpr char const* modelPath = MODELDIR_ "sponza_complex/sponza_with_ship.obj";
+    
+    constexpr char const* modelPath = MODELDIR_ "sponza/Sponza.gltf";
     //constexpr char const* modelPath = MODELDIR_ "nanosuit/nanosuit.obj";
 
 
@@ -147,6 +152,10 @@ int main()
     Shader postProcessingHbao(postprocessingVertPath, postprocessingHbaoFragPath);
     Shader hbao(lightBoxVertPath, HbaoFragPath);
 
+    //GTAO
+    Shader postProcessingGtao(postprocessingVertPath, postprocessingGtaoFragPath);
+    Shader gtao(lightBoxVertPath, GtaoFragPath);
+    
     // load obj
     Model backpack(modelPath);
 
@@ -240,7 +249,7 @@ int main()
         ssaoKernel.push_back(sample);
     }
 
-    // generate noise texture
+    // generate noise texture for ssao
     // ----------------------
     std::vector<glm::vec3> ssaoNoise;
     for (unsigned int i = 0; i < 16; i++)
@@ -248,10 +257,21 @@ int main()
         glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, 0.0f); // rotate around z-axis (in tangent space)
         ssaoNoise.push_back(noise);
     }
+
+    // generate noise texture for gtao
+    std::vector<float> gtaoNoise;
+    for (unsigned int i = 0; i < 16; i++) {
+        float noise = randomFloats(generator) * 2.0 - 1.0;
+        gtaoNoise.push_back(noise);
+    }
     unsigned int noiseTexture; 
     glGenTextures(1, &noiseTexture);
     glBindTexture(GL_TEXTURE_2D, noiseTexture);
+    //SSAO
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+    
+    // GTAO
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &gtaoNoise[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -301,12 +321,25 @@ int main()
     postProcessingHbao.setInt("gPosition", 0);
     postProcessingHbao.setInt("gNormal", 1);
     postProcessingHbao.setInt("gAlbedo", 2);
-    postProcessingHbao.setInt("ssao", 3);
+    postProcessingHbao.setInt("hbao", 3);
 
     hbao.use();
     hbao.setInt("gPosition", 0);
     hbao.setInt("gNormal", 1);
+    hbao.setInt("texNoise", 2);
+    //GTAO
+    postProcessingGtao.use();
+    postProcessingGtao.setInt("gPosition", 0);
+    postProcessingGtao.setInt("gNormal", 1);
+    postProcessingGtao.setInt("gAlbedo", 2);
+    postProcessingGtao.setInt("gtao", 3);
 
+    gtao.use();
+    gtao.setInt("gPostion", 0);
+    gtao.setInt("gNormal", 1);
+    gtao.setInt("gAlbedo", 2);
+    gtao.setInt("gtaoNoise", 3);
+    
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -379,7 +412,7 @@ int main()
         model = glm::scale(model, glm::vec3(7.5f, 7.5f, 7.5f));
         gBufferShader.setMat4("model", model);
         gBufferShader.setInt("invertedNormals", 1); // invert normals as we're inside the cube
-        //renderCube();
+        renderCube();
         gBufferShader.setInt("invertedNormals", 0);
         // backpack model on the floor
         model = glm::mat4(1.0f);
@@ -393,38 +426,61 @@ int main()
 
         // 2. generate SSAO texture
         // ------------------------
-        glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-            glClear(GL_COLOR_BUFFER_BIT);
-            lightBox.use();
-            // Send kernel + rotation 
-            for (unsigned int i = 0; i < 64; ++i)
-                lightBox.setVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
-            lightBox.setMat4("projection", projection);
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, gPosition);
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, gNormal);
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, noiseTexture);
-            renderQuad();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+        //    glClear(GL_COLOR_BUFFER_BIT);
+        //    lightBox.use();
+        //    // Send kernel + rotation 
+        //    for (unsigned int i = 0; i < 64; ++i)
+        //        lightBox.setVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
+        //    lightBox.setMat4("projection", projection);
+        //    glActiveTexture(GL_TEXTURE0);
+        //    glBindTexture(GL_TEXTURE_2D, gPosition);
+        //    glActiveTexture(GL_TEXTURE1);
+        //    glBindTexture(GL_TEXTURE_2D, gNormal);
+        //    glActiveTexture(GL_TEXTURE2);
+        //    glBindTexture(GL_TEXTURE_2D, noiseTexture);
+        //    renderQuad();
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // generate HBAO texture
+        glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+        glClear(GL_COLOR_BUFFER_BIT);
+        hbao.use();
+        hbao.setVec2("hbao.screenSize", glm::vec2(SCR_WIDTH,SCR_HEIGHT ));
+        hbao.setFloat("hbao.radius", 1.f);
+        hbao.setFloat("hbao.maxRadiusPixels", 500.0f);
+        hbao.setFloat("hbao.bias", 0.01f);
+        hbao.setInt("hbao.directions", 64);
+        hbao.setInt("hbao.steps", 8);
+        hbao.setFloat("hbao.near", 0.1f);
+        hbao.setFloat("hbao.far", 10000.f);
+        hbao.setFloat("hbao.fov", glm::radians(60.0f));
+        hbao.setFloat("hbao.aoStrength", 1.0f);
+        hbao.setVec2("hbao.focalLen", glm::vec2(1.0f / tan(glm::radians(60.0f) / 2.0f)));
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, gPosition);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, gNormal);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, noiseTexture);
+        renderQuad();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // generate GTAO texture
         //glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
         //glClear(GL_COLOR_BUFFER_BIT);
-        //hbao.use();
-        //hbao.setVec2("Hbao.screenSize", glm::vec2(SCR_WIDTH,SCR_HEIGHT ));
-        //hbao.setFloat("Hbao.radius", 0.2f);
-        //hbao.setFloat("Hbao.maxRadiusPixels", 50.0f);
-        //hbao.setFloat("Hbao.bias", 0.05f);
-        //hbao.setInt("Hbao.directions", 8);
-        //hbao.setInt("Hbao.step", 32);
-        //hbao.setFloat("Hbao.near", 0.1f);
-        //hbao.setFloat("Hbao.far", 10000.f);
+        //gtao.use();
+        //gtao.setVec2("Gtao.screen", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
+        //gtao.setFloat("Gtao.radius", 0.2f);
+        //gtao.setInt("Gtao.directions", 16);
+        //gtao.setInt("Gtao.steps", 32);
         //glActiveTexture(GL_TEXTURE0);
         //glBindTexture(GL_TEXTURE_2D, gPosition);
         //glActiveTexture(GL_TEXTURE1);
         //glBindTexture(GL_TEXTURE_2D, gNormal);
+        //glActiveTexture(GL_TEXTURE2);
+        //glBindTexture(GL_TEXTURE_2D, noiseTexture);
         //renderQuad();
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -441,17 +497,20 @@ int main()
         // 4. lighting pass: traditional deferred Blinn-Phong lighting with added screen-space ambient occlusion
         // -----------------------------------------------------------------------------------------------------
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //postProcessingHbao.use();
-        postProcessing.use();
-        // send light relevant uniforms
-        glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
-        postProcessing.setVec3("light.Position", lightPosView);
-        postProcessing.setVec3("light.Color", lightColor);
-        // Update attenuation parameters
-        const float linear = 0.09f;
-        const float quadratic = 0.032f;
-        postProcessing.setFloat("light.Linear", linear);
-        postProcessing.setFloat("light.Quadratic", quadratic);
+        postProcessingHbao.use();
+        //postProcessingGtao.use();
+
+        //postProcessing.use();
+        // //send light relevant uniforms
+        //glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
+        //postProcessing.setVec3("light.Position", lightPosView);
+        //postProcessing.setVec3("light.Color", lightColor);
+        //// Update attenuation parameters
+        //const float linear = 0.09f;
+        //const float quadratic = 0.032f;
+        //postProcessing.setFloat("light.Linear", linear);
+        //postProcessing.setFloat("light.Quadratic", quadratic);
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gPosition);
         glActiveTexture(GL_TEXTURE1);
