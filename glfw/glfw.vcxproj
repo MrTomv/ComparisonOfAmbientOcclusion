@@ -169,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ssao\gtao.frag" />
+    <None Include="res\ssao\gtao_t.frag" />
     <None Include="res\ssao\hbao.frag" />
     <None Include="res\ssao\hbao_t.frag" />
     <None Include="res\ssao\lightBox.frag" />

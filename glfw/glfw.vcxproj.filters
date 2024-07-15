@@ -78,6 +78,7 @@
     <None Include="res\ssao\postprocessing_gtao.frag" />
     <None Include="res\ssao\gtao.frag" />
     <None Include="res\ssao\hbao_t.frag" />
+    <None Include="res\ssao\gtao_t.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependences\GLFW\include\shader_s.h">

@@ -29,15 +29,15 @@
     constexpr char const* HbaoFragPath = SHADERDIR_ "hbao_t.frag";
     // gtao
     constexpr char const* postprocessingGtaoFragPath = SHADERDIR_ "postprocessing_gtao.frag";
-    constexpr char const* GtaoFragPath = SHADERDIR_ "Gtao.frag";
+    constexpr char const* GtaoFragPath = SHADERDIR_ "gtao_t.frag";
 
 
 #define MODELDIR_ "res/texture/"
-    //constexpr char const* modelPath = MODELDIR_ "backpack/backpack.obj";
+    constexpr char const* modelPath = MODELDIR_ "backpack/backpack.obj";
     //constexpr char const* modelPath = MODELDIR_ "crytek-sponza/sponza.obj";
     //constexpr char const* modelPath = MODELDIR_ "sponza_complex/sponza_with_ship.obj";
     
-    constexpr char const* modelPath = MODELDIR_ "sponza/Sponza.gltf";
+    //constexpr char const* modelPath = MODELDIR_ "sponza/Sponza.gltf";
     //constexpr char const* modelPath = MODELDIR_ "nanosuit/nanosuit.obj";
 
 
@@ -267,7 +267,7 @@ int main()
     unsigned int noiseTexture; 
     glGenTextures(1, &noiseTexture);
     glBindTexture(GL_TEXTURE_2D, noiseTexture);
-    //SSAO
+    //SSAO and HBAO
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
     
     // GTAO
@@ -280,7 +280,10 @@ int main()
     // ImGui Editor 
     ImVec4 normal_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     ImVec4 normal_pos = ImVec4(2.0, 4.0f, -2.0f, 1.0f);
-    
+    //Int 
+    ImVec4 intPara = ImVec4(4.f, 100.f, 32.f, 1);
+    ImVec4 floatPara = ImVec4(2.5f, 1.5f, 0.2f, 1);
+
     // lighting info
     
     // -------------
@@ -372,6 +375,9 @@ int main()
         ImGui::Text("Light Color");
         ImGui::ColorEdit3("Reset Light Color", (float*)&normal_color);
         ImGui::Indent(); 
+        ImGui::DragFloat3("RInt", (float*)&intPara);
+        ImGui::DragFloat3("RFloat", (float*)&floatPara);
+        ImGui::Indent(); 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         ImGui::Text("Application delta time %.3fms", io.DeltaTime*1000.0f);
         ImGui::Button("2222", ImVec2(100, 50));
@@ -426,55 +432,59 @@ int main()
 
         // 2. generate SSAO texture
         // ------------------------
-        //glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-        //    glClear(GL_COLOR_BUFFER_BIT);
-        //    lightBox.use();
-        //    // Send kernel + rotation 
-        //    for (unsigned int i = 0; i < 64; ++i)
-        //        lightBox.setVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
-        //    lightBox.setMat4("projection", projection);
-        //    glActiveTexture(GL_TEXTURE0);
-        //    glBindTexture(GL_TEXTURE_2D, gPosition);
-        //    glActiveTexture(GL_TEXTURE1);
-        //    glBindTexture(GL_TEXTURE_2D, gNormal);
-        //    glActiveTexture(GL_TEXTURE2);
-        //    glBindTexture(GL_TEXTURE_2D, noiseTexture);
-        //    renderQuad();
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+            glClear(GL_COLOR_BUFFER_BIT);
+            lightBox.use();
+            // Send kernel + rotation 
+            for (unsigned int i = 0; i < 64; ++i)
+                lightBox.setVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
+            lightBox.setMat4("projection", projection);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, gPosition);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, gNormal);
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, noiseTexture);
+            renderQuad();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // generate HBAO texture
-        glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-        glClear(GL_COLOR_BUFFER_BIT);
-        hbao.use();
-        hbao.setVec2("hbao.screenSize", glm::vec2(SCR_WIDTH,SCR_HEIGHT ));
-        hbao.setFloat("hbao.radius", 1.f);
-        hbao.setFloat("hbao.maxRadiusPixels", 500.0f);
-        hbao.setFloat("hbao.bias", 0.01f);
-        hbao.setInt("hbao.directions", 64);
-        hbao.setInt("hbao.steps", 8);
-        hbao.setFloat("hbao.near", 0.1f);
-        hbao.setFloat("hbao.far", 10000.f);
-        hbao.setFloat("hbao.fov", glm::radians(60.0f));
-        hbao.setFloat("hbao.aoStrength", 1.0f);
-        hbao.setVec2("hbao.focalLen", glm::vec2(1.0f / tan(glm::radians(60.0f) / 2.0f)));
+        //glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+        //glClear(GL_COLOR_BUFFER_BIT);
+        //hbao.use();
+        //hbao.setVec2("hbao.screenSize", glm::vec2(SCR_WIDTH,SCR_HEIGHT ));
+        //hbao.setFloat("hbao.radius", 1.f);
+        //hbao.setFloat("hbao.maxRadiusPixels", 500.0f);
+        //hbao.setFloat("hbao.bias", 0.01f);
+        //hbao.setInt("hbao.directions", 64);
+        //hbao.setInt("hbao.steps", 8);
+        //hbao.setFloat("hbao.near", 0.1f);
+        //hbao.setFloat("hbao.far", 10000.f);
+        //hbao.setFloat("hbao.fov", glm::radians(60.0f));
+        //hbao.setFloat("hbao.aoStrength", 1.0f);
+        //hbao.setVec2("hbao.focalLen", glm::vec2(1.0f / tan(glm::radians(60.0f) / 2.0f)));
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, gPosition);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, gNormal);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, noiseTexture);
-        renderQuad();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //glActiveTexture(GL_TEXTURE0);
+        //glBindTexture(GL_TEXTURE_2D, gPosition);
+        //glActiveTexture(GL_TEXTURE1);
+        //glBindTexture(GL_TEXTURE_2D, gNormal);
+        //glActiveTexture(GL_TEXTURE2);
+        //glBindTexture(GL_TEXTURE_2D, noiseTexture);
+        //renderQuad();
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // generate GTAO texture
         //glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
         //glClear(GL_COLOR_BUFFER_BIT);
         //gtao.use();
-        //gtao.setVec2("Gtao.screen", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
-        //gtao.setFloat("Gtao.radius", 0.2f);
-        //gtao.setInt("Gtao.directions", 16);
-        //gtao.setInt("Gtao.steps", 32);
+        //gtao.setVec2("Gtao.screenSize", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
+        //gtao.setInt("Gtao.steps", intPara.x);
+        //gtao.setFloat("Gtao.limit", intPara.y);
+        //gtao.setFloat("Gtao.stride", intPara.z);
+        //gtao.setFloat("Gtao.radius", floatPara.x);
+        //gtao.setFloat("Gtao.fallOf", floatPara.y);
+        //gtao.setFloat("Gtao.thicknessMix", floatPara.z);
+
         //glActiveTexture(GL_TEXTURE0);
         //glBindTexture(GL_TEXTURE_2D, gPosition);
         //glActiveTexture(GL_TEXTURE1);
@@ -497,19 +507,19 @@ int main()
         // 4. lighting pass: traditional deferred Blinn-Phong lighting with added screen-space ambient occlusion
         // -----------------------------------------------------------------------------------------------------
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        postProcessingHbao.use();
+        //postProcessingHbao.use();
         //postProcessingGtao.use();
 
-        //postProcessing.use();
-        // //send light relevant uniforms
-        //glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
-        //postProcessing.setVec3("light.Position", lightPosView);
-        //postProcessing.setVec3("light.Color", lightColor);
-        //// Update attenuation parameters
-        //const float linear = 0.09f;
-        //const float quadratic = 0.032f;
-        //postProcessing.setFloat("light.Linear", linear);
-        //postProcessing.setFloat("light.Quadratic", quadratic);
+        postProcessing.use();
+         //send light relevant uniforms
+        glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
+        postProcessing.setVec3("light.Position", lightPosView);
+        postProcessing.setVec3("light.Color", lightColor);
+        // Update attenuation parameters
+        const float linear = 0.09f;
+        const float quadratic = 0.032f;
+        postProcessing.setFloat("light.Linear", linear);
+        postProcessing.setFloat("light.Quadratic", quadratic);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gPosition);
@@ -738,6 +748,7 @@ void processInput(GLFWwindow* window)
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         camera.SetCameraSpeedRate(2.f);
+        
     }
     else 
     {
