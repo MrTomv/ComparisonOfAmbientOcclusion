@@ -145,7 +145,8 @@
       <AdditionalIncludeDirectories>C:\OpenGL\glfw\glfw\dependences\GLFW\include;%(AdditionalIncludeDirectories);C:\Users\10373\Desktop\github demo\OpenGL-master\glfw\dependences\GLFW\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TRACY_ENABLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -164,16 +165,22 @@
     <ClCompile Include="dependences\GLFW\include\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="dependences\GLFW\include\imgui\imgui_tables.cpp" />
     <ClCompile Include="dependences\GLFW\include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="dependences\GLFW\include\tracy\public\TracyClient.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\05\main.cpp" />
     <ClCompile Include="src\glad.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\ssao\blur\BoxBlur.frag" />
+    <None Include="res\ssao\blur\gaussianBlur.frag" />
     <None Include="res\ssao\gtao.frag" />
     <None Include="res\ssao\gtao_t.frag" />
     <None Include="res\ssao\hbao.frag" />
     <None Include="res\ssao\hbao_t.frag" />
     <None Include="res\ssao\lightBox.frag" />
     <None Include="res\ssao\lightBox.vert" />
+    <None Include="res\ssao\blur\meanBlur.frag" />
     <None Include="res\ssao\postprocessing.frag" />
     <None Include="res\ssao\postprocessing.vert" />
     <None Include="res\ssao\gbuffer.frag" />
@@ -220,6 +227,8 @@
     <ClInclude Include="dependences\GLFW\include\Shader.h" />
     <ClInclude Include="dependences\GLFW\include\shader_s.h" />
     <ClInclude Include="dependences\GLFW\include\stb_image.h" />
+    <ClInclude Include="dependences\GLFW\include\tracy\public\tracy\Tracy.hpp" />
+    <ClInclude Include="dependences\GLFW\include\tracy\public\tracy\TracyOpenGL.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

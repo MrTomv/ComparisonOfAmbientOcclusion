@@ -42,6 +42,9 @@
     <ClCompile Include="src\05\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dependences\GLFW\include\tracy\public\TracyClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ssao\gbuffer.vert" />
@@ -79,6 +82,9 @@
     <None Include="res\ssao\gtao.frag" />
     <None Include="res\ssao\hbao_t.frag" />
     <None Include="res\ssao\gtao_t.frag" />
+    <None Include="res\ssao\blur\meanBlur.frag" />
+    <None Include="res\ssao\blur\BoxBlur.frag" />
+    <None Include="res\ssao\blur\gaussianBlur.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependences\GLFW\include\shader_s.h">
@@ -124,6 +130,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dependences\GLFW\include\imgui\imgui_impl_opengl3_loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dependences\GLFW\include\tracy\public\tracy\Tracy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dependences\GLFW\include\tracy\public\tracy\TracyOpenGL.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
