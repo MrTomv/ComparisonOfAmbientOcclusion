@@ -12,16 +12,18 @@ enum Camera_Movement {
     FORWARD,
     BACKWARD,
     LEFT,
-    RIGHT
+    RIGHT,
+    ROTATE_LEFT,
+    ROTATE_RIGHT
 };
 
 // Default camera values
-const float YAW = -90.0f;
+const float YAW = -360.f;
 const float PITCH = 0.0f;
-float SPEED = 25.f;
+float SPEED = 150.f;
 const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
-
+const float DEFAULT_ROTATION_SPEED = 20.0f;
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera
@@ -33,6 +35,7 @@ public:
     glm::vec3 Up;
     glm::vec3 Right;
     glm::vec3 WorldUp;
+
     // euler Angles
     float Yaw;
     float Pitch;
@@ -40,9 +43,9 @@ public:
     float MovementSpeed;
     float MouseSensitivity;
     float Zoom;
-
+    float RotationSpeed;
     // constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM), RotationSpeed(DEFAULT_ROTATION_SPEED)
     {
         Position = position;
         WorldUp = up;
@@ -51,7 +54,7 @@ public:
         updateCameraVectors();
     }
     // constructor with scalar values
-    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM), RotationSpeed(DEFAULT_ROTATION_SPEED)
     {
         Position = glm::vec3(posX, posY, posZ);
         WorldUp = glm::vec3(upX, upY, upZ);
@@ -69,7 +72,9 @@ public:
     void SetCameraSpeedRate(float speed) {
         SPEED *= speed;
     }
-
+    void SetRotationSpeed(float speed) {
+        RotationSpeed = speed;
+    }
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(Camera_Movement direction, float deltaTime)
     {
@@ -82,6 +87,13 @@ public:
             Position -= Right * velocity;
         if (direction == RIGHT)
             Position += Right * velocity;
+        if (direction == ROTATE_LEFT)
+            Yaw += RotationSpeed * deltaTime;
+        if (direction == ROTATE_RIGHT)
+            Yaw -= RotationSpeed * deltaTime;
+
+        if (direction == ROTATE_LEFT || direction == ROTATE_RIGHT)
+            updateCameraVectors();
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.

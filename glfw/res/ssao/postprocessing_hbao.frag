@@ -43,7 +43,7 @@ void main(){
     vec3 light = basic + diffuseColor + specularColor;
     
     
-    //FragColor = vec4(texture(gAlbedo, TexCoords).rgb, 1.0);
+    //FragColor = vec4(texture(gAlbedo, TexCoords).rgb, 1.0);   
     FragColor = vec4(light, 1.0);
     //FragColor = vec4(texture(gAlbedo, TexCoords).rgb, 1.0);
     //FragColor = vec4(vec3(AmbientOcclusion), 1.0);

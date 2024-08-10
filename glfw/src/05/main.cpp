@@ -15,7 +15,7 @@
 #include <imgui/imgui_impl_opengl3.h>
 #include <tracy/public/tracy/Tracy.hpp>
 
-
+const float PI = 3.14159265;
 
 // shader path
 #define SHADERDIR_ "res/ssao/"
@@ -27,12 +27,15 @@
 
     // ssao
     constexpr char const* postprocessingSSAOFragPath = SHADERDIR_ "postprocessing_ssao.frag";
+    constexpr char const* ssaoOnlyFragPath = SHADERDIR_ "ao/ssao_only.frag";
     constexpr char const* lightBoxFragPath = SHADERDIR_ "ssao.frag";
     // hbao
     constexpr char const* postprocessingHbaoFragPath = SHADERDIR_ "postprocessing_hbao.frag";
+    constexpr char const* hbaoOnlyFragPath = SHADERDIR_ "ao/hbao_only.frag";
     constexpr char const* HbaoFragPath = SHADERDIR_ "hbao_t.frag";
     // gtao
     constexpr char const* postprocessingGtaoFragPath = SHADERDIR_ "postprocessing_gtao.frag";
+    constexpr char const* gtaoOnlyFragPath = SHADERDIR_ "ao/gtao_only.frag";
     constexpr char const* GtaoFragPath = SHADERDIR_ "gtao_t.frag";
 
     // blur algorithm
@@ -43,12 +46,13 @@
     constexpr char const* gaussianBlurFragPath = BLURDIR_ "gaussianBlur.frag";
 
 #define MODELDIR_ "res/texture/"
-    //constexpr char const* modelPath = MODELDIR_ "backpack/backpack.obj";
+    //constexpr char const* modelPath = MODELDIR_ "sponza/sponza.obj";
     //constexpr char const* modelPath = MODELDIR_ "crytek-sponza/sponza.obj";
     //constexpr char const* modelPath = MODELDIR_ "sponza_complex/sponza_with_ship.obj";
     
     constexpr char const* modelPath = MODELDIR_ "sponza/Sponza.gltf";
-    //constexpr char const* modelPath = MODELDIR_ "nanosuit/nanosuit.obj";
+    constexpr char const* CarModelPath = MODELDIR_  "Dragon/DragonAttenuation.gltf"; 
+    constexpr char const* nanosuitModelPath = MODELDIR_ "nanosuit/nanosuit.obj";
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -61,20 +65,31 @@ void renderQuad();
 void renderSSAO(GLuint ssaoFBO, Shader& lightBox, const std::vector<glm::vec3>& ssaoKernel, GLuint gPosition, GLuint gNormal, GLuint noiseTexture, const glm::mat4& projection);
 void renderHBAO(GLuint ssaoFBO, Shader& hbao, GLuint gPosition, GLuint gNormal, GLuint noiseTexture);
 void renderGTAO(GLuint ssaoFBO, Shader& gtao, GLuint gPosition, GLuint gNormal, GLuint noiseTexture, ImVec4 intPara, ImVec4 floatPara);
+void renderAOGreyScaleOnly(GLuint ssaoFBO, Shader& onlyGSSHADER);
 void renderBlur(GLuint ssaoFBO, Shader& meanBlur, GLuint meanBlurColorBuffer);
 void renderCube();
 void printFrame(ImGuiIO& io, std::vector<float>& t);
-void testFrameRate(bool &test, ImGuiIO& io, std::vector<float>& frame, bool &show, const char* aoEffectName[4], int aoEffectChoice, const char* blurEffectName[4], int blurEffectChoice);
+void printDelta(ImGuiIO& io, std::vector<float>& t);
+
+void testDelta(bool& test, ImGuiIO& io, std::vector<float>& frame, bool& show, const char* aoEffectName[4], int aoEffectChoice, const char* blurEffectName[4], int blurEffectChoice, bool isLight, const char* gsEffectName[4], int gsEffectChoice, string);
+
+void postprocessingForHBAO(Shader& postProcessingHbao, glm::vec3& lightPos, glm::vec3& lightColor);
+
+void testFrameRate(bool& test, ImGuiIO& io, std::vector<float>& frame, bool& show, const char* aoEffectName[4], int aoEffectChoice, const char* blurEffectName[4], int blurEffectChoice, bool isLight, const char* gsEffectName[4], int gsEffectChoice, string filename);
+
+void postprocessingForGTAO(Shader& postProcessingGtao, glm::vec3& lightPos, glm::vec3& lightColor);
+
+void postprocessingForSSAO(Shader& postProcessing, glm::vec3& lightPos, glm::vec3& lightColor);
 
 void frameDataIntoCSV(const std::vector<float>& frame, const std::string& filename);
 
 // settings
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 bool blinn = false;
 bool blinnKeyPressed = false;
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
+Camera camera(glm::vec3(-760.0f, 145.0f, -30.0f));
 
 float lastX = (float)SCR_WIDTH / 2.0;
 float lastY = (float)SCR_HEIGHT / 2.0;
@@ -109,6 +124,12 @@ enum BlurState {
     MeanBlur
 };
 
+enum AOGreyScale {
+    none,
+    ssao,
+    hbao,
+    gtao
+};
 
 int main()
 {
@@ -161,7 +182,11 @@ int main()
     const char* aoEffectName[] = { "NONE", "SSAO", "HBAO", "GTAO" };
 
     BlurState blurEffectChoice = None;
-    const char* blurEffectName[] = { "None", "Meam Blur", "Box Blur", "Gaussian Blur"};
+    const char* blurEffectName[] = { "None", "Meam Blur", "Box Blur"};
+
+    AOGreyScale gsEffectChoice = none;
+    const char* gsEffectName[] = { "none", "ssao", "hbao", "gtao" };
+
     // End
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -197,7 +222,14 @@ int main()
     Shader boxBlur(blurVertPath, boxBlurFragPath);
     Shader gauessianBlur(blurVertPath, gaussianBlurFragPath);
     // load obj
-    Model backpack(modelPath);
+    Model sponza(modelPath);
+    Model nanosuit(nanosuitModelPath);
+    Model toyCar(CarModelPath);
+
+    //Just rendering ao greyScale
+    Shader onlySSAO(lightBoxVertPath, ssaoOnlyFragPath);
+    Shader onlyHBAO(lightBoxVertPath, hbaoOnlyFragPath);
+    Shader onlyGTAO(lightBoxVertPath, gtaoOnlyFragPath);
 
     // configure g-buffer framebuffer
     // ------------------------------
@@ -323,10 +355,10 @@ int main()
 
     // ImGui Editor 
     ImVec4 normal_color = ImVec4(1.f, 1.f, 1.f, 1.00f);
-    ImVec4 normal_pos = ImVec4(0.0, 0.0f, -800.0f, 1.0f);
+    ImVec4 normal_pos = ImVec4(0.0, 2000.0f, 0.0f, 1.0f);
     //Int 
-    ImVec4 intPara = ImVec4(4.f, 100.f, 32.f, 1);
-    ImVec4 floatPara = ImVec4(2.5f, 1.5f, 0.2f, 1);
+    ImVec4 intPara = ImVec4(165.f, 1000.f, 9.f, 1);
+    ImVec4 floatPara = ImVec4(12.5f, 1.5f, 0.2f, 1);
 
     // lighting info
     
@@ -387,11 +419,35 @@ int main()
     gtao.setInt("gAlbedo", 2);
     gtao.setInt("gtaoNoise", 3);
     
+    // only ao greyScale
+    onlySSAO.use();
+    onlySSAO.setInt("gPosition", 0);
+    onlySSAO.setInt("gNormal", 1);
+    onlySSAO.setInt("gAlbedo", 2);
+    onlySSAO.setInt("ssao", 3);
+
+    onlyHBAO.use();
+    onlyHBAO.setInt("gPosition", 0);
+    onlyHBAO.setInt("gNormal", 1);
+    onlyHBAO.setInt("gAlbedo", 2);
+    onlyHBAO.setInt("hbao", 3);
+
+    onlyGTAO.use();
+    onlyGTAO.setInt("gPosition", 0);
+    onlyGTAO.setInt("gNormal", 1);
+    onlyGTAO.setInt("gAlbedo", 2);
+    onlyGTAO.setInt("gtao", 3);
+
+    
     // Blur Algorithm
 
     bool test = false;
     bool show = false;
+    bool isLight = false;
+    bool enableNano = false;
+    bool enableCar = false;
     std::vector<float> frame;
+    float circleTime = glfwGetTime();
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -415,8 +471,7 @@ int main()
         ImGui::NewFrame();
         {
         // simple window
-        ImGui::Begin("Hello, ImGui!");
-        ImGui::Text("This is some useful text.");
+        ImGui::Begin("Control Panel");
         ImGui::Indent(); 
 
         ImGui::Text("Light Position");
@@ -428,25 +483,44 @@ int main()
         ImGui::DragFloat3("RInt", (float*)&intPara);
         ImGui::DragFloat3("RFloat", (float*)&floatPara);
         ImGui::Indent(); 
-        ImGui::Text("AO Effect");
-        int currentEffect = static_cast<int>(aoEffectChoice);
-        if(ImGui::Combo("##", &currentEffect, aoEffectName, IM_ARRAYSIZE(aoEffectName))) {
-            aoEffectChoice = static_cast<AOstate>(currentEffect);
-            std::cout << "Now AO Effect is: " << aoEffectName[aoEffectChoice] << std::endl;
+        ImGui::Checkbox("Using Light", &isLight);
+
+        if (isLight) {
+            //std::cout << "Light On." << std::endl;
+            if (gsEffectChoice != none) {
+                gsEffectChoice = none;  
+            }
+            ImGui::Text("AO Effect with light");
+            int currentEffect = static_cast<int>(aoEffectChoice);
+            if(ImGui::Combo("AO Effect with light", &currentEffect, aoEffectName, IM_ARRAYSIZE(aoEffectName))) {
+                aoEffectChoice = static_cast<AOstate>(currentEffect);
+                std::cout << "Now AO Effect is: " << aoEffectName[aoEffectChoice] << std::endl;
+            }
+        }
+        else {
+            if (aoEffectChoice != NONE) {
+                aoEffectChoice = NONE;  
+            }
+            ImGui::Text("AO GreyScale");
+            int currentGSEffect = static_cast<int>(gsEffectChoice);
+            if(ImGui::Combo("AO GreyScale", &currentGSEffect, gsEffectName, IM_ARRAYSIZE(gsEffectName))) {
+                gsEffectChoice = static_cast<AOGreyScale>(currentGSEffect);
+                string t = gsEffectName[gsEffectChoice];
+                std::cout << "Now AO GreyScale Effect is: " << t.c_str() << std::endl;
+            }
+
         }
         ImGui::Text("Blur Effect");
         int currentBlurEffect = static_cast<int>(blurEffectChoice);
-        if(ImGui::Combo("###", &currentBlurEffect, blurEffectName, IM_ARRAYSIZE(blurEffectName))) {
+        if(ImGui::Combo("Blur Effect", &currentBlurEffect, blurEffectName, IM_ARRAYSIZE(blurEffectName))) {
             blurEffectChoice = static_cast<BlurState>(currentBlurEffect);
             std::cout << "Now Blur Effect is: " << blurEffectName[blurEffectChoice] << std::endl;
         }
+
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         ImGui::Text("Application delta time %.3fms", io.DeltaTime*1000.0f);
-        ImGui::Button("2222", ImVec2(100, 50));
-
-        if (ImGui::Button("111", ImVec2(100, 50)))
+        if (ImGui::Button("Performance", ImVec2(100, 50)))
         {
-            // 按钮被按下，设置 test 为 true
             test = test ? false : true;
             if (test == false)
                 show = true;
@@ -455,6 +529,13 @@ int main()
             std::cout << "Test Start! Test status: "<< test <<". Show status: " << show << std::endl;
             std::cout << "-------------------------------------------------------" << std::endl;
         }
+
+        ImGui::Indent();
+        ImGui::Text("Add More Model");
+        ImGui::Checkbox("Nanosuit", &enableNano);
+        ImGui::Checkbox("Car", &enableCar);
+
+
         ImGui::End();
 
         ImGui::Render();
@@ -484,22 +565,36 @@ int main()
         gBufferShader.setMat4("view", view);
         gBufferShader.setFloat("uNear", 0.1f);
         gBufferShader.setFloat("uFar", 10000.f);
-        // room cube
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0, 7.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(7.5f, 7.5f, 7.5f));
-        gBufferShader.setMat4("model", model);
-        gBufferShader.setInt("invertedNormals", 1); // invert normals as we're inside the cube
-        //renderCube();
-        gBufferShader.setInt("invertedNormals", 0);
-        // backpack model on the floor
+
+        // sponza model on the floor
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.5f, 0.0));
-        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
+        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0, 0.0, 0.0));
         model = glm::scale(model, glm::vec3(1.0f));
         gBufferShader.setMat4("model", model);
-        backpack.Draw(gBufferShader);
-        
+        sponza.Draw(gBufferShader);
+
+        // render nanosuit model
+        float currentTime = glfwGetTime();
+        float deltaTime = currentTime - circleTime;
+        float circle = sin(deltaTime) * 50.0f;
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.f , 0.0+ circle));
+        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0, 0.0, 0.0));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0, 1.0, 0.0));
+        model = glm::scale(model, glm::vec3(15.0f));
+        gBufferShader.setMat4("model", model);
+        if(enableNano)
+            nanosuit.Draw(gBufferShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-250.0f+circle, 0.f, 50.0));
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0, 0.0, 0.0));
+        model = glm::scale(model, glm::vec3(50.f));
+        gBufferShader.setMat4("model", model);
+        if(enableCar)
+            toyCar.Draw(gBufferShader);
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. generate SSAO texture
@@ -519,7 +614,8 @@ int main()
         //    glBindTexture(GL_TEXTURE_2D, noiseTexture);
         //    renderQuad();
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        if (aoEffectChoice == 1)
+ 
+        if (aoEffectChoice == 1 || gsEffectChoice == 1)
             renderSSAO(ssaoFBO, lightBox, ssaoKernel, gPosition, gNormal, noiseTexture, projection);
 
         // generate HBAO texture
@@ -546,7 +642,7 @@ int main()
         //glBindTexture(GL_TEXTURE_2D, noiseTexture);
         //renderQuad();
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        if (aoEffectChoice == 2)
+        if (aoEffectChoice == 2 || gsEffectChoice == 2)
             renderHBAO(ssaoFBO, hbao, gPosition, gNormal, noiseTexture);
 
         // generate GTAO texture
@@ -569,7 +665,7 @@ int main()
         //glBindTexture(GL_TEXTURE_2D, noiseTexture);
         //renderQuad();
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        if (aoEffectChoice == 3)
+        if (aoEffectChoice == 3 || gsEffectChoice == 3)
             renderGTAO(ssaoFBO, gtao, gPosition, gNormal, noiseTexture, intPara, floatPara);
 
         // 3. blur SSAO texture to remove noise
@@ -592,28 +688,29 @@ int main()
         // -----------------------------------------------------------------------------------------------------
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        postProcessing.use();
-         //send light relevant uniforms
-        glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
-        postProcessing.setVec3("light.Position", lightPosView);
-        postProcessing.setVec3("light.Color", lightColor);
-        // Update attenuation parameters
-        const float linear = 0.00009f;
-        const float quadratic = 0.000032f;
-        postProcessing.setFloat("light.Linear", linear);
-        postProcessing.setFloat("light.Quadratic", quadratic);
-        
-        // HBAO Setting for postprocessing_hbap fragment
-        //postProcessingHbao.use();
-        //glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
-        //postProcessingHbao.setVec3("light.Position", lightPosView);
-        //postProcessingHbao.setVec3("light.Color", lightColor);
+        if (aoEffectChoice == 1 || gsEffectChoice == 1) {
+            if(aoEffectChoice == 1)
+                postprocessingForSSAO(postProcessing, lightPos, lightColor);
+            if (gsEffectChoice == 1)
+                onlySSAO.use();
+        }
 
+        if (aoEffectChoice == 2 || gsEffectChoice == 2) {
+            if(aoEffectChoice == 2)
+            // HBAO Setting for postprocessing_hbap fragment
+                postprocessingForHBAO(postProcessingHbao, lightPos, lightColor);
+            if (gsEffectChoice == 2)
+                onlyHBAO.use();
+
+        }
+
+        if (aoEffectChoice == 3 || gsEffectChoice == 3) {
         // GTAO setting for postprocessing_gtao fragment
-        //postProcessingGtao.use();
-        //glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
-        //postProcessingGtao.setVec3("light.Position", lightPosView);
-        //postProcessingGtao.setVec3("light.Color", lightColor);
+            if(aoEffectChoice == 3)
+                postprocessingForGTAO(postProcessingGtao, lightPos, lightColor);
+            if (gsEffectChoice == 3)
+                onlyGTAO.use();
+        }
 
 
         glActiveTexture(GL_TEXTURE0);
@@ -631,8 +728,7 @@ int main()
         renderQuad();
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
         //test
-        testFrameRate(test, io, frame, show, aoEffectName, aoEffectChoice, blurEffectName, blurEffectChoice);
-        
+        testFrameRate(test, io, frame, show, aoEffectName, aoEffectChoice, blurEffectName, blurEffectChoice, isLight, gsEffectName, gsEffectChoice,"DeltaTime_");
 
         /*
         // 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
@@ -704,7 +800,37 @@ int main()
     return 0;
 }
 
-void testFrameRate(bool &test, ImGuiIO& io, std::vector<float>& frame, bool &show, const char* aoEffectName[4], int aoEffectChoice, const char* blurEffectName[4], int blurEffectChoice)
+void postprocessingForSSAO(Shader& postProcessing, glm::vec3& lightPos, glm::vec3& lightColor)
+{
+    postProcessing.use();
+    //send light relevant uniforms
+    glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
+    postProcessing.setVec3("light.Position", lightPosView);
+    postProcessing.setVec3("light.Color", lightColor);
+    // Update attenuation parameters
+    const float linear = 0.00009f;
+    const float quadratic = 0.000032f;
+    postProcessing.setFloat("light.Linear", linear);
+    postProcessing.setFloat("light.Quadratic", quadratic);
+}
+
+void postprocessingForGTAO(Shader& postProcessingGtao, glm::vec3& lightPos, glm::vec3& lightColor)
+{
+    postProcessingGtao.use();
+    glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
+    postProcessingGtao.setVec3("light.Position", lightPosView);
+    postProcessingGtao.setVec3("light.Color", lightColor);
+}
+
+void postprocessingForHBAO(Shader& postProcessingHbao, glm::vec3& lightPos, glm::vec3& lightColor)
+{
+    postProcessingHbao.use();
+    glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
+    postProcessingHbao.setVec3("light.Position", lightPosView);
+    postProcessingHbao.setVec3("light.Color", lightColor);
+}
+
+void testFrameRate(bool &test, ImGuiIO& io, std::vector<float>& frame, bool &show, const char* aoEffectName[4], int aoEffectChoice, const char* blurEffectName[4], int blurEffectChoice, bool isLight, const char*gsEffectName[4], int gsEffectChoice, string filename)
 {
 
     if (test) {
@@ -712,23 +838,42 @@ void testFrameRate(bool &test, ImGuiIO& io, std::vector<float>& frame, bool &sho
             printFrame(io, frame);
         }
     }
-    if (!frame.empty() && show == true && test == false || frame.size()==300) {
+    if (!frame.empty() && show == true && test == false || frame.size() == 300) {
         if (frame.size() == 300) {
             test = false;
             show = true;
-            std::cout << "Test Completed! Now Test status is: "<<test << ". Show status is: " << show << std::endl;
+            std::cout << "Test Completed! Now Test status is: " << test << ". Show status is: " << show << std::endl;
         }
         float avg = 0.0, sum = 0.0;
         int i = 0;
         for (const auto& f : frame) {
             sum += f;
         }
-        std::cout << "Test Info - recording ao type: " << aoEffectName[aoEffectChoice]
+        string type;
+        if (!isLight) {
+            type = gsEffectName[gsEffectChoice];
+            type = type.c_str();
+        }
+        else {
+            type = aoEffectName[aoEffectChoice];
+            type = type.c_str();
+        }
+        std::cout << "Test Info - recording ao type: " << type
             << "  recording blur type: " << blurEffectName[blurEffectChoice]
             << "  Average frame is:  " << sum / frame.size() << "  recording frame count: " << frame.size() << std::endl;
         string ao = aoEffectName[aoEffectChoice];
         string blur = blurEffectName[blurEffectChoice];
-        frameDataIntoCSV(frame, "data/" + ao + "_" + blur + ".csv");
+
+        string filenameType;
+        if (!isLight) {
+            filenameType = "greyScale";
+            filenameType = filenameType.c_str();
+        }
+        else {
+            filenameType = "light";
+            filenameType = filenameType.c_str();
+        }
+        frameDataIntoCSV(frame, "data/test/720/"+ filename + type + "_" + blur + "_"+ filenameType + ".csv");
         std::cout << "------------------ Completed -------------------------" << std::endl;
         frame.clear();
 
@@ -743,6 +888,7 @@ void renderSSAO(GLuint ssaoFBO, Shader& lightBox, const std::vector<glm::vec3>& 
     for (unsigned int i = 0; i < 64; ++i)
         lightBox.setVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
     lightBox.setMat4("projection", projection);
+    lightBox.setVec2("screenSize", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, gPosition);
     glActiveTexture(GL_TEXTURE1);
@@ -770,6 +916,10 @@ void renderHBAO(GLuint ssaoFBO, Shader& hbao, GLuint gPosition, GLuint gNormal, 
     hbao.setFloat("hbao.fov", glm::radians(60.0f));
     hbao.setFloat("hbao.aoStrength", 1.0f);
     hbao.setVec2("hbao.focalLen", glm::vec2(1.0f / tan(glm::radians(60.0f) / 2.0f)));
+    hbao.setFloat("hbao.con1", 300);
+    hbao.setFloat("hbao.con2", 300 * 300);
+    hbao.setFloat("hbao.con3", -1.0/(300*300));
+    hbao.setFloat("hbao.con4", tan(30.0 * PI /180.0));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, gPosition);
@@ -803,6 +953,16 @@ void renderGTAO(GLuint ssaoFBO, Shader& gtao, GLuint gPosition, GLuint gNormal, 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+
+void renderAOGreyScaleOnly(GLuint ssaoFBO, Shader& onlyGSSHADER) {
+    glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+    glClear(GL_COLOR_BUFFER_BIT);
+    onlyGSSHADER.use();
+
+    renderQuad();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void renderBlur(GLuint ssaoFBO, Shader& blurShader, GLuint blurColorBuffer) {
     glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -812,6 +972,7 @@ void renderBlur(GLuint ssaoFBO, Shader& blurShader, GLuint blurColorBuffer) {
     renderQuad();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
 
 unsigned int cubeVAO = 0;
 unsigned int cubeVBO = 0;
@@ -968,6 +1129,10 @@ void processInput(GLFWwindow* window)
     {
         rightMouseButtonPressed = false;
     }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        camera.ProcessKeyboard(ROTATE_LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        camera.ProcessKeyboard(ROTATE_RIGHT, deltaTime);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -1044,7 +1209,7 @@ unsigned int loadTexture(const char* path)
 }
 
 void printFrame(ImGuiIO &io, std::vector<float> &t) {
-    t.push_back(io.Framerate);
+    t.push_back(io.DeltaTime*1000.f);
 }
 
 void frameDataIntoCSV(const std::vector<float>& frame, const std::string& filename) {
