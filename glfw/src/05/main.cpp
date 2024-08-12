@@ -67,7 +67,6 @@ void renderHBAO(GLuint ssaoFBO, Shader& hbao, GLuint gPosition, GLuint gNormal, 
 void renderGTAO(GLuint ssaoFBO, Shader& gtao, GLuint gPosition, GLuint gNormal, GLuint noiseTexture, ImVec4 intPara, ImVec4 floatPara);
 void renderAOGreyScaleOnly(GLuint ssaoFBO, Shader& onlyGSSHADER);
 void renderBlur(GLuint ssaoFBO, Shader& meanBlur, GLuint meanBlurColorBuffer);
-void renderCube();
 void printFrame(ImGuiIO& io, std::vector<float>& t);
 void printDelta(ImGuiIO& io, std::vector<float>& t);
 
@@ -330,6 +329,7 @@ int main()
     }
 
     // generate noise texture for gtao
+    // ----------------------
     std::vector<float> gtaoNoise;
     for (unsigned int i = 0; i < 16; i++) {
         float noise = randomFloats(generator) * 2.0 - 1.0;
@@ -552,8 +552,6 @@ int main()
         // ------
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // 1. geometry pass: render scene's geometry/color data into gbuffer
         // -----------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -597,86 +595,15 @@ int main()
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        // 2. generate SSAO texture
-        // ------------------------
-        //glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-        //    glClear(GL_COLOR_BUFFER_BIT);
-        //    lightBox.use();
-        //    // Send kernel + rotation 
-        //    for (unsigned int i = 0; i < 64; ++i)
-        //        lightBox.setVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
-        //    lightBox.setMat4("projection", projection);
-        //    glActiveTexture(GL_TEXTURE0);
-        //    glBindTexture(GL_TEXTURE_2D, gPosition);
-        //    glActiveTexture(GL_TEXTURE1);
-        //    glBindTexture(GL_TEXTURE_2D, gNormal);
-        //    glActiveTexture(GL_TEXTURE2);
-        //    glBindTexture(GL_TEXTURE_2D, noiseTexture);
-        //    renderQuad();
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
  
         if (aoEffectChoice == 1 || gsEffectChoice == 1)
             renderSSAO(ssaoFBO, lightBox, ssaoKernel, gPosition, gNormal, noiseTexture, projection);
 
-        // generate HBAO texture
-        //glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-        //glClear(GL_COLOR_BUFFER_BIT);
-        //hbao.use();
-        //hbao.setVec2("hbao.screenSize", glm::vec2(SCR_WIDTH,SCR_HEIGHT ));
-        //hbao.setFloat("hbao.radius", 1.f);
-        //hbao.setFloat("hbao.maxRadiusPixels", 500.0f);
-        //hbao.setFloat("hbao.bias", 0.01f);
-        //hbao.setInt("hbao.directions", 64);
-        //hbao.setInt("hbao.steps", 8);
-        //hbao.setFloat("hbao.near", 0.1f);
-        //hbao.setFloat("hbao.far", 10000.f);
-        //hbao.setFloat("hbao.fov", glm::radians(60.0f));
-        //hbao.setFloat("hbao.aoStrength", 1.0f);
-        //hbao.setVec2("hbao.focalLen", glm::vec2(1.0f / tan(glm::radians(60.0f) / 2.0f)));
-
-        //glActiveTexture(GL_TEXTURE0);
-        //glBindTexture(GL_TEXTURE_2D, gPosition);
-        //glActiveTexture(GL_TEXTURE1);
-        //glBindTexture(GL_TEXTURE_2D, gNormal);
-        //glActiveTexture(GL_TEXTURE2);
-        //glBindTexture(GL_TEXTURE_2D, noiseTexture);
-        //renderQuad();
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
         if (aoEffectChoice == 2 || gsEffectChoice == 2)
             renderHBAO(ssaoFBO, hbao, gPosition, gNormal, noiseTexture);
 
-        // generate GTAO texture
-        //glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-        //glClear(GL_COLOR_BUFFER_BIT);
-        //gtao.use();
-        //gtao.setVec2("Gtao.screenSize", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
-        //gtao.setInt("Gtao.steps", intPara.x);
-        //gtao.setFloat("Gtao.limit", intPara.y);
-        //gtao.setFloat("Gtao.stride", intPara.z);
-        //gtao.setFloat("Gtao.radius", floatPara.x);
-        //gtao.setFloat("Gtao.fallOf", floatPara.y);
-        //gtao.setFloat("Gtao.thicknessMix", floatPara.z);
-
-        //glActiveTexture(GL_TEXTURE0);
-        //glBindTexture(GL_TEXTURE_2D, gPosition);
-        //glActiveTexture(GL_TEXTURE1);
-        //glBindTexture(GL_TEXTURE_2D, gNormal);
-        //glActiveTexture(GL_TEXTURE2);
-        //glBindTexture(GL_TEXTURE_2D, noiseTexture);
-        //renderQuad();
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
         if (aoEffectChoice == 3 || gsEffectChoice == 3)
             renderGTAO(ssaoFBO, gtao, gPosition, gNormal, noiseTexture, intPara, floatPara);
-
-        // 3. blur SSAO texture to remove noise
-        // ------------------------------------
-        //glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
-        //glClear(GL_COLOR_BUFFER_BIT);
-        //meanBlur.use();
-        //glActiveTexture(GL_TEXTURE0);
-        //glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
-        //renderQuad();
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
         
         if (blurEffectChoice == 1)
             renderBlur(ssaoBlurFBO, meanBlur, ssaoColorBuffer);
@@ -684,10 +611,9 @@ int main()
             renderBlur(ssaoBlurFBO, boxBlur, ssaoColorBuffer);
         if (blurEffectChoice == 3)
             renderBlur(ssaoBlurFBO, gauessianBlur, ssaoColorBuffer);
-        // 4. lighting pass: traditional deferred Blinn-Phong lighting with added screen-space ambient occlusion
-        // -----------------------------------------------------------------------------------------------------
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        
+        // -----------------------------------------------------------
         if (aoEffectChoice == 1 || gsEffectChoice == 1) {
             if(aoEffectChoice == 1)
                 postprocessingForSSAO(postProcessing, lightPos, lightColor);
@@ -719,7 +645,7 @@ int main()
         glBindTexture(GL_TEXTURE_2D, gNormal);
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, gAlbedo);
-        glActiveTexture(GL_TEXTURE3); // add extra SSAO texture to lighting pass
+        glActiveTexture(GL_TEXTURE3); 
         if(blurEffectChoice == 0)
             glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
         else
@@ -730,65 +656,13 @@ int main()
         //test
         testFrameRate(test, io, frame, show, aoEffectName, aoEffectChoice, blurEffectName, blurEffectChoice, isLight, gsEffectName, gsEffectChoice,"DeltaTime_");
 
-        /*
-        // 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
-        // -----------------------------------------------------------------------------------------------------------------------
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        postProcessing.use();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, gPosition);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, gNormal);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-        // send light relevant uniforms
-        for (unsigned int i = 0; i < lightPositions.size(); i++)
-        {
-            postProcessing.setVec3("lights[" + std::to_string(i) + "].Position", lightPositions[i]);
-            postProcessing.setVec3("lights[" + std::to_string(i) + "].Color", lightColors[i]);
-            // update attenuation parameters and calculate radius
-            const float linear = 0.7f;
-            const float quadratic = 1.8f;
-            postProcessing.setFloat("lights[" + std::to_string(i) + "].Linear", linear);
-            postProcessing.setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
-        }
-        postProcessing.setVec3("viewPos", camera.Position);
-        // finally render quad
-        renderQuad();
-
-        // 2.5.copy content of geometry's depth buffer to default framebuffer's depth buffer
-        // ----------------------------------------------------------------------------------
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
-        // blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
-        // the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the 		
-        // depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
-        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // 3. render lights on top of scene
-        // --------------------------------
-        lightBox.use();
-        lightBox.setMat4("projection", projection);
-        lightBox.setMat4("view", view);
-        for (unsigned int i = 0; i < lightPositions.size(); i++)
-        {
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, lightPositions[i]);
-            model = glm::scale(model, glm::vec3(0.125f));
-            lightBox.setMat4("model", model);
-            lightBox.setVec3("lightColor", lightColors[i]);
-            renderCube();
-        }
-        */
-        //std::cout << (blinn ? "Blinn-Phong" : "Phong") << std::endl;
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         glfwPollEvents();
         FrameMark;
     }
+
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     // clearing imgui
@@ -973,82 +847,6 @@ void renderBlur(GLuint ssaoFBO, Shader& blurShader, GLuint blurColorBuffer) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-
-unsigned int cubeVAO = 0;
-unsigned int cubeVBO = 0;
-void renderCube()
-{
-    // initialize (if necessary)
-    if (cubeVAO == 0)
-    {
-        float vertices[] = {
-            // back face
-            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
-             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
-            // front face
-            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
-             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
-            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-            // left face
-            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
-            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-            // right face
-             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
-             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
-             // bottom face
-             -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-              1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
-              1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-              1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-             -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-             -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-             // top face
-             -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-              1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-              1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
-              1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-             -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-             -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
-        };
-        glGenVertexArrays(1, &cubeVAO);
-        glGenBuffers(1, &cubeVBO);
-        // fill buffer
-        glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        // link vertex attributes
-        glBindVertexArray(cubeVAO);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-    // render Cube
-    glBindVertexArray(cubeVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
-}
-
-// renderQuad() renders a 1x1 XY quad in NDC
-// -----------------------------------------
 unsigned int quadVAO = 0;
 unsigned int quadVBO;
 void renderQuad()
@@ -1145,7 +943,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 
-// glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
@@ -1170,7 +967,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// 
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {

@@ -42,8 +42,11 @@ void main()
         offset.xyz = offset.xyz * 0.5 + 0.5; 
         float sd = texture(gPosition, offset.xy).z; 
 
-        float rangeCheck = smoothstep(0.0, 1.0, radius / abs(pos.z - sd));
-        occlusion += (sd >= samPos.z + bias ? 1.0 : 0.0) * rangeCheck;           
+        float rc = smoothstep(0.0, 1.0, radius / abs(pos.z - sd));
+
+        if(sd >= samPos.z + bias )
+            occlusion += 1.0 * rc;
+     
     }
     occlusion = 1.0 - (occlusion / kernelSize);
     
